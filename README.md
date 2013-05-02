@@ -1,6 +1,8 @@
 # LEVELNET
-
 Remote API bindings for [LevelUP](https://github.com/rvagg/node-levelup)
+
+#### DUPLICATE MODULE WARNING
+Another module [multilevel](https://github.com/juliangruber/multilevel) exists and provides the same functionalityas levelnet. If in doubt use [multilevel](https://github.com/juliangruber/multilevel) - it has been around longer and does some extra stuff that might be useful
 
 A replication of the LevelDB API on the client. Full API coverage using battle hardened [mux-demux](https://github.com/dominictarr/mux-demux) and [dnode](https://github.com/substack/dnode) to provide the streaming RPC mechanism. Create a `LevelUP` instance, pass it to a `Levelnet` server function and get a duplex stream to pipe into. The `client()` function returns a stream which also has the full `levelUP` API integrated.
 
