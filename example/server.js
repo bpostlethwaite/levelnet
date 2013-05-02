@@ -8,7 +8,7 @@ var PORT = 9988
   , levdb = levnet()
 
 function handler(stream) {
-  console.log(db)
+
   var lev = levdb.server(db)
 
   stream.pipe(lev).pipe(stream)

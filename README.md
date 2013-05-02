@@ -1,21 +1,26 @@
 # LEVELNET
 
-TCP stream bindings for the LevelDB API
+Remote API bindings for [LevelUP](https://github.com/rvagg/node-levelup)
 
-A replication of the LevelDB API on a client using streams over TCP sockets. Full API coverage using the battle hardened [mux-demux](https://github.com/dominictarr/mux-demux) and [dnode](https://github.com/substack/dnode). Create a `LevelDB` instance, pass it to `Levelnet` and use the returned handler in a TCP server. Or just pass `Levelnet` any stream. Call `connect(stream)` on the client side and write your LevelDB logic in the `connection` listener and you are done!
+A replication of the LevelDB API on the client. Full API coverage using battle hardened [mux-demux](https://github.com/dominictarr/mux-demux) and [dnode](https://github.com/substack/dnode) to provide the streaming RPC mechanism. Create a `LevelUP` instance, pass it to a `Levelnet` server function and get a duplex stream to pipe into. The `client()` function returns a stream which also has the full `levelUP` API integrated.
 
 ## EXAMPLES
 
 ### SIMPLE SERVER
 ```javascript
 var levelup = require('levelup')
-  , db = levelup('./mydb')
+  , db = levelup('./testdb')
   , net = require('net')
   , levnet = require('../.')
 
 var PORT = 9988
-var leveltcp = levnet(db)
-var server = net.createServer(leveltcp).listen(PORT)
+  , server = net.createServer(handler).listen(PORT)
+  , levdb = levnet()
+
+function handler(stream) {
+  var lev = levdb.server(db)
+  stream.pipe(lev).pipe(stream)
+}
 ```
 
 ### SIMPLE CLIENT Callback API
@@ -24,18 +29,20 @@ var levnet = require('../../.')
   , net = require('net')
 
 var PORT = 9988
-var stream = net.connect(PORT)
-var levdb = levnet().connect(stream)
+  , stream = net.connect(PORT)
+  , levdb = levnet()
 
-levdb.on('connection', function () {
-  levdb.put('lando', 'calrissian', function(err) {
+var lev = levdb.client()
+
+lev.on('levelup', function () {
+  lev.put('lando', 'calrissian', function(err) {
     if (err) console.log(err)
 
-    levdb.get('lando', function (err, value) {
+    lev.get('lando', function (err, value) {
       if (err) return console.log('No Lando!', err)
       console.log('lando', '=', value)
 
-      levdb.get('Cloud City', function (err, value) {
+      lev.get('Cloud City', function (err, value) {
         if (err) return console.log('no Cloud City!', err)
         console.log('faruq', '=', value)
       })
@@ -51,22 +58,26 @@ var levnet = require('../../.')
 
 var PORT = 9988
 var stream = net.connect(PORT)
-var levdb = levnet().connect(stream)
+var levdb = levnet()
+var lev = levdb.client()
 
-levdb.on('connection', function () {
-  levdb.put('Yavin', 'Corsusca', function(err) {
+lev.on('levelup', function () {
+  lev.put('Yavin', 'Corsusca', function(err) {
     if (err) console.log(err)
 
-    levdb.put('Boba', 'Fett', function(err) {
+    lev.put('Boba', 'Fett', function(err) {
       if (err) console.log(err)
 
-      levdb.createReadStream().on('data', function (data) {
+      lev.createReadStream().on('data', function (data) {
         console.log(data.key, '=', data.value)
-        levdb.end()
+        lev.end()
       })
     })
   })
 })
+
+stream.pipe(lev).pipe(stream)
+
 ```
 
 

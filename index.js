@@ -11,8 +11,6 @@ function levnet() {
 
     var mx = MuxDemux()
 
-    console.log(levdb)
-
     var d = dnode({
       put: function (key, value, options, cb) {
         if (typeof options === 'function')
@@ -47,7 +45,6 @@ function levnet() {
 
     d.pipe(mx.createStream({type: 'dnode'})).pipe(d)
     mx.on('connection', function (c) {
-      console.log(c)
       switch (c.meta.type) {
         case 'rs':
         levdb.createReadStream(c.meta.options).pipe(c)
