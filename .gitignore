@@ -8,7 +8,7 @@ lib-cov
 *.gz
 
 node_modules/*
-testdb/*
+*/testdb/*
 
 
 pids

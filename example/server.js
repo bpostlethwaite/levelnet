@@ -4,20 +4,21 @@ var levelup = require('levelup')
   , levnet = require('../.')
 
 var PORT = 9988
-var levdb = levnet(db)
   , server = net.createServer(handler).listen(PORT)
+  , levdb = levnet()
 
 function handler(stream) {
+  console.log(db)
+  var lev = levdb.server(db)
 
-  stream.pipe(levdb).pipe(stream)
+  stream.pipe(lev).pipe(stream)
 
-  // levdb.on('error', function () {
-  //   stream.destroy()
-  // })
-  // stream.on('error', function () {
-  //   levdb.destroy()
-  // })
-
+  lev.on('error', function () {
+    stream.destroy()
+  })
+  stream.on('error', function () {
+    lev.destroy()
+  })
 }
 
 

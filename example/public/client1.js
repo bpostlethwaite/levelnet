@@ -5,15 +5,17 @@ var PORT = 9988
   , stream = net.connect(PORT)
   , levdb = levnet()
 
-levdb.on('levelup', function () {
-  levdb.put('lando', 'calrissian', function(err) {
+var lev = levdb.client()
+
+lev.on('levelup', function () {
+  lev.put('lando', 'calrissian', function(err) {
     if (err) console.log(err)
 
-    levdb.get('lando', function (err, value) {
+    lev.get('lando', function (err, value) {
       if (err) return console.log('No Lando!', err)
       console.log('lando', '=', value)
 
-      levdb.get('Cloud City', function (err, value) {
+      lev.get('Cloud City', function (err, value) {
         if (err) return console.log('no Cloud City!', err)
         console.log('faruq', '=', value)
       })
@@ -22,5 +24,5 @@ levdb.on('levelup', function () {
 })
 
 
-stream.pipe(levdb).pipe(stream)
+stream.pipe(lev).pipe(stream)
 

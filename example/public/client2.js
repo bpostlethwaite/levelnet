@@ -3,19 +3,23 @@ var levnet = require('../../.')
 
 var PORT = 9988
 var stream = net.connect(PORT)
-var levdb = levnet().connect(stream)
+var levdb = levnet()
+var lev = levdb.client()
 
-levdb.on('connection', function () {
-  levdb.put('Yavin', 'Corsusca', function(err) {
+lev.on('levelup', function () {
+  lev.put('Yavin', 'Corsusca', function(err) {
     if (err) console.log(err)
 
-    levdb.put('Boba', 'Fett', function(err) {
+    lev.put('Boba', 'Fett', function(err) {
       if (err) console.log(err)
 
-      levdb.createReadStream().on('data', function (data) {
+      lev.createReadStream().on('data', function (data) {
         console.log(data.key, '=', data.value)
-        levdb.end()
+        lev.end()
       })
     })
   })
 })
+
+stream.pipe(lev).pipe(stream)
+

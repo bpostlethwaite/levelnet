@@ -1,20 +1,17 @@
 var MuxDemux = require('mux-demux')
   , dnode = require('dnode')
-  , duplex = require('stream').Duplex
 
-function levnet(levdb) {
 
-  if (levdb) {
-    /*
-     * SERVER CODE
-     */
+function levnet() {
+  self = {}
 
-    if( !isLevelupInstance(levdb) )
+  self.server = function (levdb) {
+    if( !(levdb) )
       throw new Error("levnet server stream must be called with an open levelUP instance!")
 
     var mx = MuxDemux()
 
-    console.log("IN SERVER")
+    console.log(levdb)
 
     var d = dnode({
       put: function (key, value, options, cb) {
@@ -50,7 +47,7 @@ function levnet(levdb) {
 
     d.pipe(mx.createStream({type: 'dnode'})).pipe(d)
     mx.on('connection', function (c) {
-          console.log("IN SERVER CONNECTION")
+      console.log(c)
       switch (c.meta.type) {
         case 'rs':
         levdb.createReadStream(c.meta.options).pipe(c)
@@ -70,15 +67,12 @@ function levnet(levdb) {
       }
     })
     return mx
+  }
 
-  } else {
-    /*
-     * CLIENT CODE
-     */
+
+  self.client = function () {
     var mx = MuxDemux()
-    console.log("IN CLIENT")
     mx.on('connection', function (c) {
-          console.log("IN CLIENT CONNECTION")
       /*
        * Build client facing dnode API with access to mux-demux streams.
        * Need to call dnode function to setup the mux-demux stream
@@ -90,21 +84,12 @@ function levnet(levdb) {
       }
     })
 
-    mx.createReadStream = function (options) {
-      return mx.createReadStream({type:'rs', options: options})
-    }
-    mx.createKeyStream = function (options) {
-      return mx.createReadStream({type:'ks', options: options})
-    }
-    mx.createValueStream = function (options) {
-      return mx.createReadStream({type:'vs', options: options})
-    }
-    mx.createWriteStream = function (options) {
-      return mx.createWriteStream({type:'ws', options: options})
-    }
+    mx.createKeyStream = wrapStream(mx.createReadStream, 'ks')
+    mx.createValueStream = wrapStream(mx.createReadStream, 'vs')
+    mx.createReadStream = wrapStream(mx.createReadStream, 'rs')
+    mx.createWriteStream = wrapStream(mx.createWriteStream, 'ws')
 
     function control (remote) {
-      console.log("IN CONTROL")
       var levapi = ['put', 'get', 'del',
                     'batch', 'approximateSize',
                     'isOpen', 'isClosed']
@@ -115,16 +100,20 @@ function levnet(levdb) {
     }
     return mx
   }
+
+  return self
+
 }
 
-function isLevelupInstance(db) {
-  var api = ['put', 'get', 'del',
-             'batch', 'approximateSize']
-
-  return api.map(hasOwnProperty, db._db )
-            .reduce( function(acc, val) {
-           return acc && val
-         })
+/*
+ * This wraps regular mux-demux streams
+ * so they take options like levelUP streams
+ */
+function wrapStream (fn, type) {
+  return function () {
+    var arg = {type: type, options: arguments[0]}
+    return fn.apply(null, [arg])
+  }
 }
 
 module.exports = levnet
