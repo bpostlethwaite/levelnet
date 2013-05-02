@@ -2,11 +2,11 @@
 
 TCP stream bindings for the LevelDB API
 
-A replication of the LevelDB API on a client using calls over TCP sockets. Full API coverage using battle hardened mux-demux and dnode streams. Create a LevelDB instance, pass it to `Levelnet` and it returns a handler that can be used in a TCP server. Call `connect(stream)` on the client side and write your LevelDB logic in the `connection` listener and you are done!
+A replication of the LevelDB API on a client using streams over TCP sockets. Full API coverage using the battle hardened [mux-demux](https://github.com/dominictarr/mux-demux) and [dnode](https://github.com/substack/dnode). Create a `LevelDB` instance, pass it to `Levelnet` and use the returned handler in a TCP server. Or just pass `Levelnet` any stream. Call `connect(stream)` on the client side and write your LevelDB logic in the `connection` listener and you are done!
 
 ## EXAMPLES
 
-### SERVER
+### SIMPLE SERVER
 ```javascript
 var levelup = require('levelup')
   , db = levelup('./mydb')
@@ -18,7 +18,7 @@ var leveltcp = levnet(db)
 var server = net.createServer(leveltcp).listen(PORT)
 ```
 
-### CLIENT Callback API
+### SIMPLE CLIENT Callback API
 ```javascript
 var levnet = require('../../.')
   , net = require('net')
@@ -44,7 +44,7 @@ levdb.on('connection', function () {
 })
 ```
 
-### CLIENT Streaming API
+### SIMPLE CLIENT Streaming API
 ```javascript
 var levnet = require('../../.')
   , net = require('net')

@@ -2,8 +2,8 @@ var levnet = require('../../.')
   , net = require('net')
 
 var PORT = 9988
-var stream = net.connect(PORT)
-var levdb = levnet().connect(stream)
+  , stream = net.connect(PORT)
+  , levdb = levnet()
 
 levdb.on('connection', function () {
   levdb.put('lando', 'calrissian', function(err) {
@@ -20,3 +20,8 @@ levdb.on('connection', function () {
     })
   })
 })
+
+
+stream.pipe(levdb).pipe(stream)
+
+console.log(levdb)

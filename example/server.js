@@ -4,7 +4,20 @@ var levelup = require('levelup')
   , levnet = require('../.')
 
 var PORT = 9988
-var leveltcp = levnet(db)
-var server = net.createServer(leveltcp).listen(PORT)
+
+  , server = net.createServer(handler).listen(PORT)
+
+function handler(stream) {
+    var levdb = levnet(db, stream)
+
+
+  // levdb.on('error', function () {
+  //   stream.destroy()
+  // })
+  // stream.on('error', function () {
+  //   levdb.destroy()
+  // })
+
+}
 
 

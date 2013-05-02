@@ -2,14 +2,18 @@ var MuxDemux = require('mux-demux')
   , dnode = require('dnode')
   , duplex = require('stream').Duplex
 
-function levnet(levdb) {
+function levnet(levdb, stream) {
 
-  var self = function (stream) {
+  if (levdb) {
+    /*
+     * SERVER CODE
+     */
 
-    if (!levdb)
-      return new Error("Must call main levnet function with leveldb instance!")
+    if( !isLevelupInstance(levdb) )
+      return new Error("levnet server stream must be called with an open levelUP instance!")
 
     var mx = MuxDemux()
+
     stream.pipe(mx).pipe(stream)
 
     var d = dnode({
@@ -45,8 +49,9 @@ function levnet(levdb) {
     })
 
     d.pipe(mx.createStream({type: 'dnode'})).pipe(d)
-
+    console.log("IN SERVER")
     mx.on('connection', function (c) {
+          console.log("IN SERVER CONNECTION")
       switch (c.meta.type) {
         case 'rs':
         levdb.createReadStream(c.meta.options).pipe(c)
@@ -65,27 +70,16 @@ function levnet(levdb) {
         break;
       }
     })
+    return mx
+
+  } else {
     /*
-     * What really should we be doing
-     * about errors here ??
+     * CLIENT CODE
      */
-    mx.on('error', function () {
-      stream.destroy()
-    })
-    stream.on('error', function () {
-      mx.destroy()
-    })
-  }
-
-
-  self.connect = function (stream) {
-
-    var api = stream
     var mx = MuxDemux()
-
-    stream.pipe(mx).pipe(stream)
-
+    console.log("IN CLIENT")
     mx.on('connection', function (c) {
+          console.log("IN CLIENT CONNECTION")
       /*
        * Build client facing dnode API with access to mux-demux streams.
        * Need to call dnode function to setup the mux-demux stream
@@ -97,34 +91,41 @@ function levnet(levdb) {
       }
     })
 
-    api.createReadStream = function (options) {
+    mx.createReadStream = function (options) {
       return mx.createReadStream({type:'rs', options: options})
     }
-    api.createKeyStream = function (options) {
+    mx.createKeyStream = function (options) {
       return mx.createReadStream({type:'ks', options: options})
     }
-    api.createValueStream = function (options) {
+    mx.createValueStream = function (options) {
       return mx.createReadStream({type:'vs', options: options})
     }
-    api.createWriteStream = function (options) {
+    mx.createWriteStream = function (options) {
       return mx.createWriteStream({type:'ws', options: options})
     }
 
     function control (remote) {
+      console.log("IN CONTROL")
       var levapi = ['put', 'get', 'del',
                     'batch', 'approximateSize',
                     'isOpen', 'isClosed']
       levapi.forEach(function (key) {
-        api[key] = remote[key]
+        mx[key] = remote[key]
       })
-      api.emit('connection')
+      mx.emit('connection')
     }
-    return api
-
+    return mx
   }
-
-  return self
 }
 
+function isLevelupInstance(db) {
+  var api = ['put', 'get', 'del',
+             'batch', 'approximateSize']
+
+  return api.map(hasOwnProperty, db._db )
+            .reduce( function(acc, val) {
+           return acc && val
+         })
+}
 
 module.exports = levnet
