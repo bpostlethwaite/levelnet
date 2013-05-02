@@ -5,7 +5,7 @@ var PORT = 9988
   , stream = net.connect(PORT)
   , levdb = levnet()
 
-levdb.on('connection', function () {
+levdb.on('levelup', function () {
   levdb.put('lando', 'calrissian', function(err) {
     if (err) console.log(err)
 
@@ -24,4 +24,3 @@ levdb.on('connection', function () {
 
 stream.pipe(levdb).pipe(stream)
 
-console.log(levdb)

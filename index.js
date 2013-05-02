@@ -2,7 +2,7 @@ var MuxDemux = require('mux-demux')
   , dnode = require('dnode')
   , duplex = require('stream').Duplex
 
-function levnet(levdb, stream) {
+function levnet(levdb) {
 
   if (levdb) {
     /*
@@ -10,11 +10,11 @@ function levnet(levdb, stream) {
      */
 
     if( !isLevelupInstance(levdb) )
-      return new Error("levnet server stream must be called with an open levelUP instance!")
+      throw new Error("levnet server stream must be called with an open levelUP instance!")
 
     var mx = MuxDemux()
 
-    stream.pipe(mx).pipe(stream)
+    console.log("IN SERVER")
 
     var d = dnode({
       put: function (key, value, options, cb) {
@@ -49,7 +49,6 @@ function levnet(levdb, stream) {
     })
 
     d.pipe(mx.createStream({type: 'dnode'})).pipe(d)
-    console.log("IN SERVER")
     mx.on('connection', function (c) {
           console.log("IN SERVER CONNECTION")
       switch (c.meta.type) {
@@ -112,7 +111,7 @@ function levnet(levdb, stream) {
       levapi.forEach(function (key) {
         mx[key] = remote[key]
       })
-      mx.emit('connection')
+      mx.emit('levelup')
     }
     return mx
   }
