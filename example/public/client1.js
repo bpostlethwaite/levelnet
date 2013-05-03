@@ -3,9 +3,8 @@ var levnet = require('../../.')
 
 var PORT = 9988
   , stream = net.connect(PORT)
-  , levdb = levnet()
 
-var lev = levdb.client()
+var lev = levnet.client()
 
 lev.on('levelup', function () {
   lev.put('lando', 'calrissian', function(err) {

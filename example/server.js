@@ -5,11 +5,10 @@ var levelup = require('levelup')
 
 var PORT = 9988
   , server = net.createServer(handler).listen(PORT)
-  , levdb = levnet()
 
 function handler(stream) {
 
-  var lev = levdb.server(db)
+  var lev = levnet.server(db)
 
   stream.pipe(lev).pipe(stream)
 

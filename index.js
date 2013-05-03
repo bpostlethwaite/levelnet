@@ -2,10 +2,9 @@ var MuxDemux = require('mux-demux')
   , dnode = require('dnode')
 
 
-function levnet() {
-  self = {}
+var levnet = {
 
-  self.server = function (levdb) {
+  server:  function (levdb) {
     if( !(levdb) )
       throw new Error("levnet server stream must be called with an open levelUP instance!")
 
@@ -67,7 +66,7 @@ function levnet() {
   }
 
 
-  self.client = function () {
+, client: function () {
     var mx = MuxDemux()
     mx.on('connection', function (c) {
       /*
@@ -97,9 +96,6 @@ function levnet() {
     }
     return mx
   }
-
-  return self
-
 }
 
 /*

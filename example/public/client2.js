@@ -3,8 +3,7 @@ var levnet = require('../../.')
 
 var PORT = 9988
 var stream = net.connect(PORT)
-var levdb = levnet()
-var lev = levdb.client()
+var lev = levnet.client()
 
 lev.on('levelup', function () {
   lev.put('Yavin', 'Corsusca', function(err) {

@@ -1,10 +1,11 @@
 # LEVELNET
 Remote API bindings for [LevelUP](https://github.com/rvagg/node-levelup)
 
-#### DUPLICATE MODULE WARNING
-Another module [multilevel](https://github.com/juliangruber/multilevel) exists and provides the same functionalityas levelnet. If in doubt use [multilevel](https://github.com/juliangruber/multilevel) - it has been around longer and does some extra stuff that might be useful
-
 A replication of the LevelDB API on the client. Full API coverage using battle hardened [mux-demux](https://github.com/dominictarr/mux-demux) and [dnode](https://github.com/substack/dnode) to provide the streaming RPC mechanism. Create a `LevelUP` instance, pass it to a `Levelnet` server function and get a duplex stream to pipe into. The `client()` function returns a stream which also has the full `levelUP` API integrated.
+
+#### DUPLICATE MODULE WARNING
+>  Another module, [multilevel](https://github.com/juliangruber/multilevel), exists and provides the same functionalityas levelnet - though levelnet uses dnode whereas multilevel uses rpc-stream. If in doubt use [multilevel](https://github.com/juliangruber/multilevel) - it has been around longer and does some extra stuff that might be useful. I also changed `levnet`'s API to match multilevel so you can just drop in either and they'll work.
+
 
 ## EXAMPLES
 
@@ -17,10 +18,9 @@ var levelup = require('levelup')
 
 var PORT = 9988
   , server = net.createServer(handler).listen(PORT)
-  , levdb = levnet()
 
 function handler(stream) {
-  var lev = levdb.server(db)
+  var lev = levnet.server(db)
   stream.pipe(lev).pipe(stream)
 }
 ```
@@ -32,9 +32,8 @@ var levnet = require('../../.')
 
 var PORT = 9988
   , stream = net.connect(PORT)
-  , levdb = levnet()
 
-var lev = levdb.client()
+var lev = levnet.client()
 
 lev.on('levelup', function () {
   lev.put('lando', 'calrissian', function(err) {
@@ -60,8 +59,7 @@ var levnet = require('../../.')
 
 var PORT = 9988
 var stream = net.connect(PORT)
-var levdb = levnet()
-var lev = levdb.client()
+var lev = levnet.client()
 
 lev.on('levelup', function () {
   lev.put('Yavin', 'Corsusca', function(err) {
